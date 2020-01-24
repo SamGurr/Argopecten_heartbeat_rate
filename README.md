@@ -1,5 +1,5 @@
 # Argopecten_heartbeat_rate
-## This repository contains origin data in the following manuscript (title, authors, and abstract below) for submission to Marine and Freshwater Behavior and Physiology
+## This repository contains original data in the following manuscript (title, authors, and abstract below) for submission to Marine and Freshwater Behavior and Physiology
 
 Acclimatization to diel-cycling hypoxia reduces the responsiveness of adult bay scallop Argopecten irradians to changing oxygen concentrations 
 Samuel J. Gurra, Ian Dwyera, Jennifer Goleskia, Fernando P. Limab, Rui Seabrab, Christopher J. Goblera, Nils Volkenborna
