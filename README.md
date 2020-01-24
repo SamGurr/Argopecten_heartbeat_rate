@@ -3,7 +3,7 @@
 
 ### Acclimatization to diel-cycling hypoxia reduces the responsiveness of adult bay scallop Argopecten irradians to changing oxygen concentrations 
 
-#### Samuel J. Gurr^a^, Ian Dwyer, Jennifer Goleski, Fernando P. Lima, Rui Seabra, Christopher J. Gobler, Nils Volkenborn
+#### Samuel J. Gurr<sup>a</sup>, Ian Dwyer, Jennifer Goleski, Fernando P. Lima, Rui Seabra, Christopher J. Gobler, Nils Volkenborn
 
 #### a School of Marine and Atmospheric Sciences, Stony Brook University, Stony Brook, NY, USA
 #### b CIBIO, Centro de Investigação em Biodiversidade e Recursos Genéticos, Universidade do Porto, Campus Agrário de Vairão 4485-661, Vairão, Portugal.
