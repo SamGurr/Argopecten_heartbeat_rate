@@ -1,0 +1,6 @@
+type,threshold,numberFound,avgDurMinutes,avgAvgDO,duration_hours,count*av_duration/av_mag
+<1.0,0.99,0,NA,NA,NA,NA
+<2.0,1.99,0,NA,NA,NA,NA
+<3.0,2.99,0,NA,NA,NA,NA
+<3.5,3.49,0,NA,NA,NA,NA
+<4.8,4.79,31,190.97,4.67,3.18,21.11
