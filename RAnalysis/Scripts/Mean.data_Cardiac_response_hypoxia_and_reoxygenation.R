@@ -6,10 +6,69 @@
 
 rm(list=ls()) #clears workspace 
 
+library(tidyr)
+library(dplyr)
 # Set Working Directory:
-setwd("C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_hearbeat_rate/RAnalysis/")
+setwd("C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_heartbeat_rate/RAnalysis/")
 # laod table
 heart <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/Heartbeat_rate_intial_exposure_recovery_MEAN.csv", header=T) #read Size.info data
+
+
+DF_means <- heart %>% dplyr::select(-c(1:2, 11:16)) # select the subtracted (corrected) hreat rate values and the insitu mean characteristics by site
+heart.rates <- DF_means %>% dplyr::select(c(1:8)) # exposure hrs 1,2,3,8,9,15,16; recovery hr 1
+vars <- DF_means %>% dplyr::select(c(9:37)) # 30 total variables (5 DO thresholds * 6 characteristics; mag, freq, % time, count, EQ)
+
+Summary_TABLE <- data.frame() # run this before the loop
+for(i in 1:ncol(heart.rates)){
+  for(m in 1:ncol(vars)) {
+    # loop linear regressions for rquared and p values
+    rsq <- summary(lm(heart.rates[,i] ~ vars[,m]))$r.squared
+    pval <- summary(lm(heart.rates[,i] ~ vars[,m]))$coef[2,"Pr(>|t|)"]
+    # assign the data table 
+    RSQ.loop <- data.frame(matrix(nrow = 1, ncol = 4)) # create a new data table
+    colnames(RSQ.loop) <- c('heart.meas', 'hypoxia.characteristic', 'rsq', 'pval') # assign headers
+    RSQ.loop$heart.meas <- colnames(heart.rates[i])
+    RSQ.loop$hypoxia.characteristic <- colnames(vars[m])
+    RSQ.loop$rsq <- rsq
+    RSQ.loop$pval <- pval
+    # loop additions 
+    df <- data.frame(RSQ.loop) # name dataframe for this single row
+    Summary_TABLE <- rbind(Summary_TABLE,df) # bind to a cumulative list dataframe
+    }# inside loop'
+print(Summary_TABLE) # show loop progress in the console
+}# outside loo
+Summary_TABLE # loop product 
+
+# Library
+library(ggplot2)
+
+
+Summary_TABLE2 <- Summary_TABLE %>% 
+  dplyr::filter(!hypoxia.characteristic  %in% c("Salinity", "secchi_depth", "site_depth", "chl_a_ug_l")) %>% 
+  separate(hypoxia.characteristic, c("Descriptor", "DO_threshold"), "_")
+
+# Heatmaps
+ggplot(Summary_TABLE2, aes(Descriptor,DO_threshold,  fill= rsq)) + 
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "grey") +
+  facet_grid(heart.meas ~ ., scales = "free")
+# all plots 
+
+
+
+Summary_TABLE2$rsq <- format(round(Summary_TABLE2$rsq, 3))
+Summary_TABLE2$rsq <-as.numeric(Summary_TABLE2$rsq)
+RSQ_Heatmap_Plots <- Summary_TABLE2 %>% 
+  #format(round(rsq, 2), nsmall = 2) %>% 
+  dplyr::filter(heart.meas %in% c("SUB_1_hr_init", "SUB_2_hr_init", "SUB_3_hr_init", "Recovery_1_hr")) %>% 
+  dplyr::filter(!Descriptor %in% c("MeanConcentration", "EQ")) %>% 
+  ggplot(aes(Descriptor,DO_threshold, fill = rsq)) +
+  geom_tile() + 
+  scale_fill_gradient(low = "white", high = "grey50") +
+  facet_grid(. ~ heart.meas, scales = "free") +
+  geom_text(aes(label = rsq))
+RSQ_Heatmap_Plots # view plots
+
 
 ################################################### #
 #### SITE CHARACTERISTICS ######################### #
