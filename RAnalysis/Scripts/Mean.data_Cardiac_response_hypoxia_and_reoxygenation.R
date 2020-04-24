@@ -6,10 +6,14 @@
 
 rm(list=ls()) #clears workspace 
 
+# upload libraries
+library(ggplot2)
 library(tidyr)
 library(dplyr)
+
 # Set Working Directory:
 setwd("C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_heartbeat_rate/RAnalysis/")
+
 # laod table
 heart <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/Heartbeat_rate_intial_exposure_recovery_MEAN.csv", header=T) #read Size.info data
 
@@ -39,40 +43,41 @@ print(Summary_TABLE) # show loop progress in the console
 }# outside loo
 Summary_TABLE # loop product 
 
-# Library
-library(ggplot2)
-
-
+### - create new summary table to filter out unwanted data (salininty, secchi depth, chl a, site depth)
+#### Why? This data was not measured continuously during field acclimation and is not related to the 5 hypoxia thresholds for the heatmap
+### - use tidyr::separate to divide the 'hypoxia.characteristic' to 'Descriptor' & 'DO_threshold' by 
 Summary_TABLE2 <- Summary_TABLE %>% 
   dplyr::filter(!hypoxia.characteristic  %in% c("Salinity", "secchi_depth", "site_depth", "chl_a_ug_l")) %>% 
   separate(hypoxia.characteristic, c("Descriptor", "DO_threshold"), "_")
 
-# Heatmaps
-ggplot(Summary_TABLE2, aes(Descriptor,DO_threshold,  fill= rsq)) + 
-  geom_tile() +
-  scale_fill_gradient(low = "white", high = "grey") +
-  facet_grid(heart.meas ~ ., scales = "free")
-# all plots 
-
-
-
-Summary_TABLE2$rsq <- format(round(Summary_TABLE2$rsq, 3))
-Summary_TABLE2$rsq <-as.numeric(Summary_TABLE2$rsq)
-RSQ_Heatmap_Plots <- Summary_TABLE2 %>% 
+# Create Heatmap
+Summary_TABLE2$rsq <- format(round(Summary_TABLE2$rsq, 1)) # sig figs for heat map
+Summary_TABLE2$rsq <-as.numeric(Summary_TABLE2$rsq) # convert rsq to numeric
+Summary_TABLE2$heart.meas = factor(Summary_TABLE2$heart.meas, 
+                                   levels=c("SUB_1_hr_init", "SUB_2_hr_init", "SUB_3_hr_init", "SUB_8_hr", 
+                                            "SUB_9_hr", "SUB_15_hr","SUB_16_hr", "Recovery_1_hr")) # order the hearbeat rate variables
+RSQ_Heatmap_Plots <- Summary_TABLE2 %>% # un heat map
   #format(round(rsq, 2), nsmall = 2) %>% 
-  dplyr::filter(heart.meas %in% c("SUB_1_hr_init", "SUB_2_hr_init", "SUB_3_hr_init", "Recovery_1_hr")) %>% 
-  dplyr::filter(!Descriptor %in% c("MeanConcentration", "EQ")) %>% 
-  ggplot(aes(Descriptor,DO_threshold, fill = rsq)) +
-  geom_tile() + 
-  scale_fill_gradient(low = "white", high = "grey50") +
-  facet_grid(. ~ heart.meas, scales = "free") +
-  geom_text(aes(label = rsq))
+  #dplyr::filter(heart.meas %in% c("SUB_1_hr_init", "SUB_2_hr_init", "SUB_3_hr_init", "Recovery_1_hr")) %>% 
+  #dplyr::filter(!Descriptor %in% c("MeanConcentration", "EQ")) %>% 
+  ggplot(aes(Descriptor,DO_threshold, fill = rsq)) + # the descritor and DO threhsolds and fill by the rsq values
+  geom_tile() + # tile command calls the data as a heat map
+  scale_fill_gradient(low = "white", high = "blue") + # heatmap as white to grey
+  facet_grid(. ~ heart.meas, scales = "free") + # heat map spectrum is determined by the data
+  geom_text(size=2, aes(label = rsq)) + # add rsq text to each heatmap segment
+  theme(axis.text.x = element_text(angle = 90)) # rotate x axis labels
 RSQ_Heatmap_Plots # view plots
+# save the heat map to the output folder
+ggsave(RSQ_Heatmap_Plots, file="C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_heartbeat_rate/RAnalysis/Output/Supplementary_heatmap.pdf",
+       width=35, height=20, units = "cm", dpi=500)
 
+################################################################# #
+###### BELOW IS A MANUAL METHOD TO VIEW ALL LINEAR REGRESSIONS ## #
+###################################################################
 
 ################################################### #
 #### SITE CHARACTERISTICS ######################### #
-####################################################
+################################################### #
 
 site<-heart$site
 ch<-heart$chl_a_ug_l
@@ -125,7 +130,7 @@ week_mod<-heart$Percent_4.8_last_week
 
 ################################################### #
 #### Heartbeat data input ######################### #
-####################################################
+################################################### #
 
 names(heart)
 
@@ -148,7 +153,7 @@ hr_recov<-heart$Recovery_1_hr
 
 ################################################### #
 #### 1 hour post hypoxia ########################## #
-####################################################
+################################################### #
 
 # CARDIAC RESPONSE  ABOSOLUTE VALUE FROM PREBASAL CORRECTION ####### #
 
