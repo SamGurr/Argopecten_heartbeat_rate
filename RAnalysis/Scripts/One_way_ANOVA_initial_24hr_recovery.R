@@ -54,6 +54,8 @@ setwd("C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_
 
 DAT.initial <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/initial_hb_response/Summary_initial_hypoxia_exposure_vertical.csv", header=T) #read Size.info DAT.initiala # choose 180202_initial_heartbeat_response_for_R
 names(DAT.initial)
+DAT_24_hr <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/24-hour_hb_response/Summary_24_hour_exposure.csv", header=T) #read Size.info DAT.initiala # choose 180202_initial_heartbeat_response_for_R
+names(DAT_24_hr)
 DAT.recovery <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/recovery_hb_response/Summary_recovery_to_normoxia_vertical.csv", header=T) #read Size.info DAT.initiala # choose 180202_initial_heartbeat_response_for_R
 names(DAT.recovery)
 names(DAT.recovery) <- c("site","mesocosm","site_trmt","Treatment","av_HB")
@@ -75,7 +77,7 @@ initial.hour.HYP <-  DAT.ALL %>%
 initial.hour.NORM <-  DAT.ALL %>% 
   filter(Treatment %in% 'N_first_hour')
 ################################ #
-#subset DAT.recovery
+#subseta
 ################################ #
 DAT.ALL # view DAT.ALL
 # both 1 hour in H and N (initial)
@@ -91,22 +93,10 @@ recovery.hour.NORM <-  DAT.ALL %>%
 pre.experiment <-  DAT.ALL %>% 
   filter(Treatment %in% 'H_pre_trmt_normoxia')
 pre.experiment.ANOVA <- summary(aov(av_HB ~ site, data = pre.experiment))
-#######################################
-# Two way anova between site and hb  ##
-#######################################
 
-twoway.anova.model <- aov(av_HB ~ Treatment *  site, data = initial.hour.ALL)
-shapiro.test(residuals(twoway.anova.model)) # shaprio wilk test of model residuals p = 0.5429;normal distribution
-hist((residuals(twoway.anova.model)))# histogram of model - looks normal
-boxplot(residuals(twoway.anova.model)) #plot boxplot of residuals - some outliers present
-plot(fitted(twoway.anova.model),residuals(twoway.anova.model)) # plot residuals
-qqnorm(residuals(twoway.anova.model)) # qqplot - looks normal
-summary(twoway.anova.model) # FIVE significant interaction between DAT.initiale and treatment
-TukeyHSD(twoway.anova.model, 'Treatment', conf.level=0.95) # tukey test on the effect of treatment with 95% confidence
-
-#######################################
-#test sites seperately with T-TESTS ###   INITIAL EXPOSURE HYP VS. NORMOXIA
-#######################################
+#################################################### #
+# One way ANOVA   INITIAL EXPOSURE HYP VS. NORMOXIA
+#################################################### #
 
 # FI
 FI.initial <- dplyr::filter(initial.hour.ALL, site == "FI")
@@ -119,12 +109,11 @@ NB.initial <- dplyr::filter(initial.hour.ALL, site == "NB")
 # Q
 Q.initial <- dplyr::filter(initial.hour.ALL, site == "Q")
 
-# ONE-WAY ANOVA######################################################## #
+# ONE-WAY ANOVA    #################################################### #
 par(mfrow=c(1,3)) #set plotting configuration
 par(mar=c(1,1,1,1)) #set margins for plots
 
-# FI
-t.test(av_HB ~ Treatment, data = FI.initial) # t.test 0.01848
+# FI - ONE-WAY ANOVA Initial exoposure (1 hour mean)
 FI.ONEWAY <-aov(av_HB ~ Treatment, data = FI.initial)
 summary(FI.ONEWAY)
 hist(residuals(FI.ONEWAY)) #plot histogram of residuals
@@ -133,8 +122,9 @@ plot(fitted(FI.ONEWAY),residuals(FI.ONEWAY))
 qqnorm(residuals(FI.ONEWAY)) # qqplot
 leveneTest(FI.ONEWAY) 
 shapiro.test(residuals(FI.ONEWAY))
-# X
-t.test(av_HB ~ Treatment, data = X.initial) # t.test 0.01928
+boxplot(av_HB ~ Treatment, data = FI.initial)
+
+# Sag Harbor - ONE-WAY ANOVA Initial exoposure (1 hour mean)
 X.ONEWAY <-aov(av_HB ~ Treatment, data = X.initial)
 summary(X.ONEWAY)
 hist(residuals(X.ONEWAY)) #plot histogram of residuals
@@ -143,8 +133,9 @@ plot(fitted(X.ONEWAY),residuals(X.ONEWAY))
 qqnorm(residuals(X.ONEWAY)) # qqplot
 leveneTest(X.ONEWAY) 
 shapiro.test(residuals(X.ONEWAY))
-# MBC
-t.test(av_HB ~ Treatment, data = MBC.initial) # t.test 0.3864
+boxplot(av_HB ~ Treatment, data = X.initial)
+
+# MBC - ONE-WAY ANOVA Initial exoposure (1 hour mean)
 MBC.ONEWAY <-aov(av_HB ~ Treatment, data = MBC.initial)
 summary(MBC.ONEWAY)
 hist(residuals(MBC.ONEWAY)) #plot histogram of residuals
@@ -153,8 +144,9 @@ plot(fitted(MBC.ONEWAY),residuals(MBC.ONEWAY))
 qqnorm(residuals(MBC.ONEWAY)) # qqplot
 leveneTest(MBC.ONEWAY) 
 shapiro.test(residuals(MBC.ONEWAY))
-# NB
-t.test(av_HB ~ Treatment, data = NB.initial) # t.test 0.05637
+boxplot(av_HB ~ Treatment, data = MBC.initial)
+
+# NB - ONE-WAY ANOVA Initial exoposure (1 hour mean)
 NB.ONEWAY <-aov(av_HB ~ Treatment, data = NB.initial)
 summary(NB.ONEWAY)
 hist(residuals(NB.ONEWAY)) #plot histogram of residuals
@@ -163,8 +155,9 @@ plot(fitted(NB.ONEWAY),residuals(NB.ONEWAY))
 qqnorm(residuals(NB.ONEWAY)) # qqplot
 leveneTest(NB.ONEWAY) 
 shapiro.test(residuals(NB.ONEWAY))
-# Q
-t.test(av_HB ~ Treatment, data = Q.initial) # t.test 0.08077
+boxplot(av_HB ~ Treatment, data = NB.initial)
+
+# Q - ONE-WAY ANOVA Initial exoposure (1 hour mean)
 Q.ONEWAY <-aov(av_HB ~ Treatment, data = Q.initial)
 summary(Q.ONEWAY)
 hist(residuals(Q.ONEWAY)) #plot histogram of residuals
@@ -173,11 +166,11 @@ plot(fitted(Q.ONEWAY),residuals(Q.ONEWAY))
 qqnorm(residuals(Q.ONEWAY)) # qqplot
 leveneTest(Q.ONEWAY) 
 shapiro.test(residuals(Q.ONEWAY))
+boxplot(av_HB ~ Treatment, data = Q.initial)
 
-
-#######################################
-#test sites seperately with T-TESTS ###   RECOVERRY TO NORMOXIA
-#######################################
+####################################### #
+# One way ANOVA   RECOVERRY TO NORMOXIA
+####################################### #
 recovery.hour.ALL <- na.omit(recovery.hour.ALL)
 # FI
 FI.recovery <- dplyr::filter(recovery.hour.ALL, site == "FI")
@@ -192,8 +185,7 @@ Q.recovery <- dplyr::filter(recovery.hour.ALL, site == "Q")
 
 # ANOVAS######################################################## #
 
-# FI
-t.test(av_HB ~ Treatment, data = FI.recovery) # t.test 0.01848
+# FI - ONE-WAY ANOVA Recovery (1 hour mean)
 FI.ONEWAY.recovery <-aov(av_HB ~ Treatment, data = FI.recovery)
 summary(FI.ONEWAY.recovery)
 hist(residuals(FI.ONEWAY.recovery)) #plot histogram of residuals
@@ -202,8 +194,8 @@ plot(fitted(FI.ONEWAY.recovery),residuals(FI.ONEWAY.recovery))
 qqnorm(residuals(FI.ONEWAY.recovery)) # qqplot
 leveneTest(FI.ONEWAY.recovery) 
 shapiro.test(residuals(FI.ONEWAY.recovery))
-# X
-t.test(av_HB ~ Treatment, data = X.recovery) # t.test 0.01928
+
+# X - ONE-WAY ANOVA Recovery (1 hour mean)
 X.ONEWAY.recovery <-aov(av_HB ~ Treatment, data = X.recovery)
 summary(X.ONEWAY.recovery)
 hist(residuals(X.ONEWAY.recovery)) #plot histogram of residuals
@@ -212,8 +204,8 @@ plot(fitted(X.ONEWAY.recovery),residuals(X.ONEWAY.recovery))
 qqnorm(residuals(X.ONEWAY.recovery)) # qqplot
 leveneTest(X.ONEWAY.recovery) 
 shapiro.test(residuals(X.ONEWAY.recovery))
-# MBC
-t.test(av_HB ~ Treatment, data = MBC.recovery) # t.test 0.3864
+
+# MBC - ONE-WAY ANOVA Recovery (1 hour mean)
 MBC.ONEWAY.recovery <-aov(av_HB ~ Treatment, data = MBC.recovery)
 summary(MBC.ONEWAY.recovery)
 hist(residuals(MBC.ONEWAY.recovery)) #plot histogram of residuals
@@ -222,8 +214,8 @@ plot(fitted(MBC.ONEWAY.recovery),residuals(MBC.ONEWAY.recovery))
 qqnorm(residuals(MBC.ONEWAY.recovery)) # qqplot
 leveneTest(MBC.ONEWAY.recovery) 
 shapiro.test(residuals(MBC.ONEWAY.recovery))
-# NB
-t.test(av_HB ~ Treatment, data = NB.recovery) # t.test 0.05637
+
+# NB - ONE-WAY ANOVA Recovery (1 hour mean)
 NB.ONEWAY.recovery <-aov(av_HB ~ Treatment, data = NB.recovery)
 summary(NB.ONEWAY.recovery)
 hist(residuals(NB.ONEWAY.recovery)) #plot histogram of residuals
@@ -232,8 +224,8 @@ plot(fitted(NB.ONEWAY.recovery),residuals(NB.ONEWAY.recovery))
 qqnorm(residuals(NB.ONEWAY.recovery)) # qqplot
 leveneTest(NB.ONEWAY.recovery) 
 shapiro.test(residuals(NB.ONEWAY.recovery))
-# Q
-t.test(av_HB ~ Treatment, data = Q.recovery) # t.test 0.08077
+
+# Q - ONE-WAY ANOVA Recovery (1 hour mean)
 Q.ONEWAY.recovery <-aov(av_HB ~ Treatment, data = Q.recovery)
 summary(Q.ONEWAY.recovery)
 hist(residuals(Q.ONEWAY.recovery)) #plot histogram of residuals
@@ -243,6 +235,86 @@ qqnorm(residuals(Q.ONEWAY.recovery)) # qqplot
 leveneTest(Q.ONEWAY.recovery) 
 shapiro.test(residuals(Q.ONEWAY.recovery))
 
+############################################### #
+# One Way ANOVA - 24 means 
+############################################## #
+DAT_24_hr
+
+library(dplyr)
+
+
+# FI
+FI_24_hr <- DAT_24_hr %>% 
+  mutate(av_HB = rowMeans(select(DAT_24_hr, starts_with("hr")), na.rm = TRUE)) %>% 
+  dplyr::filter(Site == "FI")
+# X
+X_24_hr <- DAT_24_hr %>% 
+  mutate(av_HB = rowMeans(select(DAT_24_hr, starts_with("hr")), na.rm = TRUE)) %>% 
+  dplyr::filter(Site == "Sag Harbor")
+# MBC
+MBC_24_hr <- DAT_24_hr %>% 
+  mutate(av_HB = rowMeans(select(DAT_24_hr, starts_with("hr")), na.rm = TRUE)) %>% 
+  dplyr::filter(Site == "MB")
+# NB
+NB_24_hr<- DAT_24_hr %>% 
+  mutate(av_HB = rowMeans(select(DAT_24_hr, starts_with("hr")), na.rm = TRUE)) %>% 
+  dplyr::filter(Site == "Nicoll Bay")
+# Q
+Q_24_hr <- DAT_24_hr %>% 
+  mutate(av_HB = rowMeans(select(DAT_24_hr, starts_with("hr")), na.rm = TRUE)) %>% 
+  dplyr::filter(Site == "Quantuck")
+
+# ANOVAS ######################################################## #
+
+# FI - ONE-WAY ANOVA Recovery (1 hour mean)
+FI.ONEWAY.24_hr <-aov(av_HB ~ treatment, data = FI_24_hr)
+summary(FI.ONEWAY.24_hr)
+hist(residuals(FI.ONEWAY.24_hr)) #plot histogram of residuals
+boxplot(residuals(FI.ONEWAY.24_hr)) #plot boxplot of residuals
+plot(fitted(FI.ONEWAY.24_hr),residuals(FI.ONEWAY.24_hr))
+qqnorm(residuals(FI.ONEWAY.24_hr)) # qqplot
+leveneTest(FI.ONEWAY.24_hr) 
+shapiro.test(residuals(FI.ONEWAY.24_hr))
+
+# X - ONE-WAY ANOVA Recovery (1 hour mean)
+X.ONEWAY.24_hr<-aov(av_HB ~ treatment, data = X_24_hr)
+summary(X.ONEWAY.24_hr)
+hist(residuals(X.ONEWAY.24_hr)) #plot histogram of residuals
+boxplot(residuals(X.ONEWAY.24_hr)) #plot boxplot of residuals
+plot(fitted(X.ONEWAY.24_hr),residuals(X.ONEWAY.24_hr))
+qqnorm(residuals(X.ONEWAY.24_hr)) # qqplot
+leveneTest(X.ONEWAY.24_hr) 
+shapiro.test(residuals(X.ONEWAY.24_hr))
+
+# MBC - ONE-WAY ANOVA Recovery (1 hour mean)
+MBC.ONEWAY.24_hr <-aov(av_HB ~ treatment, data = MBC_24_hr)
+summary(MBC.ONEWAY.24_hr)
+hist(residuals(MBC.ONEWAY.24_hr)) #plot histogram of residuals
+boxplot(residuals(MBC.ONEWAY.24_hr)) #plot boxplot of residuals
+plot(fitted(MBC.ONEWAY.24_hr),residuals(MBC.ONEWAY.24_hr))
+qqnorm(residuals(MBC.ONEWAY.24_hr)) # qqplot
+leveneTest(MBC.ONEWAY.24_hr) 
+shapiro.test(residuals(MBC.ONEWAY.24_hr))
+
+# NB - ONE-WAY ANOVA Recovery (1 hour mean)
+NB.ONEWAY.24_hr <-aov(av_HB ~ treatment, data = NB_24_hr)
+summary(NB.ONEWAY.24_hr)
+hist(residuals(NB.ONEWAY.24_hr)) #plot histogram of residuals
+boxplot(residuals(NB.ONEWAY.24_hr)) #plot boxplot of residuals
+plot(fitted(NB.ONEWAY.24_hr),residuals(NB.ONEWAY.24_hr))
+qqnorm(residuals(NB.ONEWAY.24_hr)) # qqplot
+leveneTest(NB.ONEWAY.24_hr) 
+shapiro.test(residuals(NB.ONEWAY.24_hr))
+
+# Q - ONE-WAY ANOVA Recovery (1 hour mean)
+Q.ONEWAY.24_hr <-aov(av_HB ~ treatment, data = Q_24_hr)
+summary(Q.ONEWAY.24_hr)
+hist(residuals(Q.ONEWAY.24_hr)) #plot histogram of residuals
+boxplot(residuals(Q.ONEWAY.24_hr)) #plot boxplot of residuals
+plot(fitted(Q.ONEWAY.24_hr),residuals(Q.ONEWAY.24_hr))
+qqnorm(residuals(Q.ONEWAY.24_hr)) # qqplot
+leveneTest(Q.ONEWAY.24_hr) 
+shapiro.test(residuals(Q.ONEWAY.24_hr))
 
 ##########
 # standard error plots by site for heartbeat rate
@@ -266,12 +338,11 @@ table
 dodge <- position_dodge(width=0.8)  
 # plot syntax with STANDARD ERROR
 plot4 <- ggplot(table, aes(x=Treatment, 
-                          y=av_HB, 
-                          color=site)) + 
+                          y=av_HB)) + 
   geom_errorbar(aes(ymin=av_HB-se, 
                     ymax=av_HB+se),position = dodge)  +
   geom_point(position=position_dodge(0.8), fill = "white", shape=15, size=4)+
-  theme_classic() +
+  theme_bw() +
   theme(
     axis.title.y = element_text(vjust= 1.8),
     axis.title.x = element_text(vjust= -0.5),
@@ -279,16 +350,13 @@ plot4 <- ggplot(table, aes(x=Treatment,
   coord_cartesian(ylim=c(20,55), xlim=c(0,5)) +
   xlab("treatment") + 
   ylab("heatbeat rate") + 
-  ggtitle("heartbeat rate response to nomroxia (hypoxia vs. control) STANDARD ERROR") +
-  scale_color_manual(values = c("black", "blue", "red",
-                                "green", "orange"))
+  facet_wrap(~site)
 
-plot4
+plot4 # view plot
 
 # plot syntax WITH STANDARD DEVIATION
-plot5  <- ggplot(table, aes(x=Treatment, 
-                            y=av_HB, 
-                            color=site)) + 
+plot5 <- ggplot(table, aes(x=Treatment, 
+                            y=av_HB)) + 
   geom_errorbar(aes(ymin=av_HB-sd, 
                     ymax=av_HB+sd),position = dodge)  +
   geom_point(position=position_dodge(0.8), fill = "white", shape=15, size=4)+
@@ -300,12 +368,8 @@ plot5  <- ggplot(table, aes(x=Treatment,
   coord_cartesian(ylim=c(20,55), xlim=c(0,5)) +
   xlab("treatment") + 
   ylab("heatbeat rate") + 
-  ggtitle("heartbeat rate response to nomroxia (hypoxia vs. control) STANDARD DEVIATION") +
-  scale_color_manual(values = c("black", "blue", "red",
-                                "green", "orange"))
+  facet_wrap(~site)
 
-plot5
+plot5 # view plot
 
-plot4 # stand error
-plot5 # stand dev
 

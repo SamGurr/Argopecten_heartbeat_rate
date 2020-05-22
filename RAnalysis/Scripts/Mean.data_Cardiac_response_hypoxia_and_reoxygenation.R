@@ -14,7 +14,7 @@ library(dplyr)
 # Set Working Directory:
 setwd("C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_heartbeat_rate/RAnalysis/")
 
-# laod table
+# load table
 heart <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/Heartbeat_rate_intial_exposure_recovery_MEAN.csv", header=T) #read Size.info data
 
 
@@ -50,21 +50,29 @@ Summary_TABLE2 <- Summary_TABLE %>%
   dplyr::filter(!hypoxia.characteristic  %in% c("Salinity", "secchi_depth", "site_depth", "chl_a_ug_l")) %>% 
   separate(hypoxia.characteristic, c("Descriptor", "DO_threshold"), "_")
 
+
 # Create Heatmap
-Summary_TABLE2$rsq <- format(round(Summary_TABLE2$rsq, 1)) # sig figs for heat map
-Summary_TABLE2$rsq <-as.numeric(Summary_TABLE2$rsq) # convert rsq to numeric
-Summary_TABLE2$heart.meas = factor(Summary_TABLE2$heart.meas, 
+Summary_TABLE3 <- Summary_TABLE2 %>%  dplyr::filter(!Descriptor  %in% c("MeanConcentration", "EQ"))
+Summary_TABLE3$rsq <- format(round(Summary_TABLE3$rsq, 3)) # sig figs for heat map
+Summary_TABLE3$rsq <-as.numeric(Summary_TABLE3$rsq) # convert rsq to numeric
+Summary_TABLE3$heart.meas = factor(Summary_TABLE3$heart.meas, 
                                    levels=c("SUB_1_hr_init", "SUB_2_hr_init", "SUB_3_hr_init", "SUB_8_hr", 
                                             "SUB_9_hr", "SUB_15_hr","SUB_16_hr", "Recovery_1_hr")) # order the hearbeat rate variables
-RSQ_Heatmap_Plots <- Summary_TABLE2 %>% # un heat map
-  #format(round(rsq, 2), nsmall = 2) %>% 
-  #dplyr::filter(heart.meas %in% c("SUB_1_hr_init", "SUB_2_hr_init", "SUB_3_hr_init", "Recovery_1_hr")) %>% 
-  #dplyr::filter(!Descriptor %in% c("MeanConcentration", "EQ")) %>% 
-  ggplot(aes(Descriptor,DO_threshold, fill = rsq)) + # the descritor and DO threhsolds and fill by the rsq values
+levels(Summary_TABLE3$heart.meas) <- c("hour_1", "hour_2", "hour_3", "hour_8", 
+                                       "hour_9", "hour_15","hour_16", "Recovery_hour_1")
+
+Summary_TABLE3$Descriptor <- as.factor(Summary_TABLE3$Descriptor)
+levels(Summary_TABLE3$Descriptor) <- c("frequency", "duration", "% time")
+Summary_TABLE3$Descriptor <- as.character(Summary_TABLE3$Descriptor)
+colnames(Summary_TABLE3)[2] <- "DCDO_descriptor"
+
+RSQ_Heatmap_Plots <- Summary_TABLE3 %>% # run heat map
+  ggplot(aes(DCDO_descriptor,DO_threshold, fill = rsq)) + # the descritor and DO threhsolds and fill by the rsq values
   geom_tile() + # tile command calls the data as a heat map
-  scale_fill_gradient(low = "white", high = "blue") + # heatmap as white to grey
+  #labs(title=expression("Cardiac response patterns"~Delta*"HBRs")) +
+  scale_fill_gradient(low = "white", high = "grey50") + # heatmap as white to grey
   facet_grid(. ~ heart.meas, scales = "free") + # heat map spectrum is determined by the data
-  geom_text(size=2, aes(label = rsq)) + # add rsq text to each heatmap segment
+  geom_text(size=3, aes(label = rsq)) + # add rsq text to each heatmap segment
   theme(axis.text.x = element_text(angle = 90)) # rotate x axis labels
 RSQ_Heatmap_Plots # view plots
 # save the heat map to the output folder

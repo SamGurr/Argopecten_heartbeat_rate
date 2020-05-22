@@ -1,7 +1,7 @@
 # script written by Sam J Gurr
-# for MANOVA tests of Argopecten irradians heartbeat measurements in a 2016 experiment at SBU
+# Last edit: 20200522
+# RM ANOVA for the 24-hour hypoxia exposure
 
-# INTIAL  -
 rm(list=ls()) # remove all data - start fresh
 
 # Install packages if not already in your library-----------------------------------------------------------------------------------------------
@@ -57,9 +57,7 @@ HB.24hr.hypoxia.OM  <- HB.24hr.hypoxia.OM  %>% dplyr::select(-block) # ommit sen
 HB.24hr.hypoxia.2 <- melt(HB.24hr.hypoxia, id.vars=c("Site", "hb_sensor", "treatment", "block")) # melt into a vertical dataset 'variable' = time; 'value' = heartbeat rate
 HB.24hr.hypoxia.2 <- HB.24hr.hypoxia.2 %>% dplyr::select(-hb_sensor, -block) # ommit sensor and block
 
-# test #### 
-# Sig diff anovas - Sag Harbor and Fire Island sig diff at hour 1 of hypoxia and Nicoll Bay at hour 2
-# Moneyboue and Wuantuck are delayed in diffference between treatment
+# ANOVA tests on Monebogue and Quantuck under prolonged hypoxia 
 HB.24hr.hypoxia.ommit<-na.omit(HB.24hr.hypoxia.2) # ommit NAs
 hourly.average <- HB.24hr.hypoxia.ommit %>%  # get the average data for sites 
   dplyr::select(treatment, variable, Site, value) %>% # call column to summarize 
@@ -69,71 +67,10 @@ summary(aov(lm(value~treatment, data = hourly.average_MB)))
 hourly.average_Q <- hourly.average %>% filter(Site %in% 'Quantuck') # set above to hour 9 - last hour not sig diff
 summary(aov(lm(value~treatment, data = hourly.average_Q)))
 
-#####
-# RECOVERY -------------------------------------------------------------- #
-# call the first hour of hypoxia
-HB.hr.O2.increase <- HB.last.TWOhours %>%  dplyr::select(Site, hb_sensor, treatment, block, min_10, min_20, min_30, min_40, min_50, min_60) # data from the termination of 24 hour hypoxia; hour of O2 INCREASE to 6.0 mg L-1 (every 10 minutes)
-HB.hr.O2.increase.OM <-  na.omit(HB.hr.O2.increase)
-HB.hr.O2.increase.OM <-  melt(HB.hr.O2.increase.OM, id.vars=c("Site", "hb_sensor", "treatment", "block"))
-HB.hr.O2.increase.OM  <- HB.hr.O2.increase.OM  %>% dplyr::select(-block) # ommit sensor and block
-HB.hr.O2.increase <- melt(HB.hr.O2.increase, id.vars=c("Site", "hb_sensor", "treatment", "block")) # melt into a vertical dataset 'variable' = time; 'value' = heartbeat rate
-HB.hr.O2.increase.2 <- HB.hr.O2.increase%>% dplyr::select(-hb_sensor, -block) # ommit sensor and block
-# call the first hour of hypoxia
-HB.hr.recovery.hypoxia <- HB.last.TWOhours %>% dplyr::select(Site, hb_sensor, treatment, block, min_70, min_80, min_90, min_100, min_110, min_120) # initial hour of recovery after 24 hr hypoxia; O2 >= 6.0 mg L-1 (every 10 minutes) 
-HB.hr.recovery.hypoxia.OM <-  na.omit(HB.hr.recovery.hypoxia)
-HB.hr.recovery.hypoxia.OM <-  melt(HB.hr.recovery.hypoxia.OM, id.vars=c("Site", "hb_sensor", "treatment", "block"))
-HB.hr.recovery.hypoxia.OM  <- HB.hr.recovery.hypoxia.OM  %>% dplyr::select(-block) # ommit sensor and block
-HB.hr.recovery.hypoxia <- melt(HB.hr.recovery.hypoxia, id.vars=c("Site", "hb_sensor", "treatment", "block")) # melt into a vertical dataset 'variable' = time; 'value' = heartbeat rate
-HB.hr.recovery.hypoxia.2 <- HB.hr.recovery.hypoxia%>% dplyr::select(-hb_sensor, -block) # ommit sensor and block
 
-################################################################################## #
 ################################################################################## #
 # RM ANOVA tests ----------------------------------------------------------- #
 ################################################################################## 
-################################################################################## #
-
-# ....response of heartbeat rate with
-# one WIHTIN = time (as 'variable' in melted tables)
-# two BETWEEN = Site and Treatment
-# subject variable  = unique ID as Site_hbsensor
-
-# # INITIAL RESPONSE TO HYPOXIA - 6 YIMES EVERY 10 MINUTES OVER 1 HOUR
-# HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID <- paste(HB.hr.initial.hypoxia.RMANOVA.OM$Site, 
-#                                                      HB.hr.initial.hypoxia.RMANOVA.OM$hb_sensor, sep ="_")
-# HB.hr.initial.hypoxia.RMANOVA.OM$treatment <- factor(HB.hr.initial.hypoxia.RMANOVA.OM$treatment)
-# HB.hr.initial.hypoxia.RMANOVA.OM$Site <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$Site)
-# HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID)
-# HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID <- as.numeric(HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID)
-# HB.hr.initial.hypoxia.RMANOVA.OM$variable <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$variable)
-# HB.hr.initial.hypoxia.RMANOVA.OM$value <- as.numeric(HB.hr.initial.hypoxia.RMANOVA.OM$value)
-# HB.hr.initial.hypoxia.RMANOVA.OM$treatment <- as.numeric(HB.hr.initial.hypoxia.RMANOVA.OM$treatment)
-# 
-# mod.INITIAL.RMANOVA <- ezANOVA(data=HB.hr.initial.hypoxia.RMANOVA.OM, 
-#     dv=value, 
-#       wid=.(Subject_ID), 
-#         within=.(variable), 
-#          between=.(treatment,Site)) 
-# 
-# print(mod.INITIAL.RMANOVA)
-
-# 24 HOURS OF HYPOXIA - 24 TIMES HOURLY MEANS OVER ONE DAY - Prepare variables
-HB.24hr.hypoxia.OM$Subject_ID <- paste(HB.24hr.hypoxia.OM$Site, 
-                                       HB.24hr.hypoxia.OM$hb_sensor, sep ="_")
-HB.24hr.hypoxia.OM$Site <- as.factor(HB.24hr.hypoxia.OM$Site)
-HB.24hr.hypoxia.OM$Subject_ID <- as.factor(HB.24hr.hypoxia.OM$Subject_ID)
-HB.24hr.hypoxia.OM$Subject_ID <- abs(HB.24hr.hypoxia.OM$Subject_ID)
-HB.24hr.hypoxia.OM$variable <- as.factor(HB.24hr.hypoxia.OM$variable)
-HB.24hr.hypoxia.OM$treatment <- as.factor(HB.24hr.hypoxia.OM$treatment)
-#HB.24hr.hypoxia.OM$value <- as.factor(HB.24hr.hypoxia.OM$value)
-HB.24hr.hypoxia.OM$value <- as.numeric(HB.24hr.hypoxia.OM$value)
-sapply(HB.24hr.hypoxia.OM, class)
-# RUN ON ALL DATA
-mod.24HOUR.RMANOVA <- ezANOVA(data=HB.24hr.hypoxia.OM, 
-                              dv=value, 
-                              wid=.(Subject_ID), 
-                              within=.(variable), 
-                              between=.(treatment))
-print(mod.24HOUR.RMANOVA)
 
 # RUN  ON SITES INDIVIDUALLY
 HB.24hr.hypoxia # view data
