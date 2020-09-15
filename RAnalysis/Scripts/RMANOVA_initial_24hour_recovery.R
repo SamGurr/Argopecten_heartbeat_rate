@@ -33,9 +33,9 @@ setwd("C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_
 HB.first.TWOhours <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/initial_hb_response/Summary_initial_hypoxia_exposure.csv", header=T) # first two hours O2 decline and initial hour of hypoxia 
 HB.24hr.hypoxia <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/24-hour_hb_response/Summary_24_hour_exposure.csv", header=T) # full 24 hour mean data (every 10 minutes)  of O2 <= 2.0 mg L-1
 HB.last.TWOhours <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/recovery_hb_response/Summary_recovery_to_normoxia.csv", header=T) # last two hours of O2 increase and initial hour of recovery to normoxia 
-------------------------------------------------------------- #
+# ------------------------------------------------------------- 
 # call the first hour O2 decline
-HB.hr.O2.decline <-  HB.first.TWOhours %>%  dplyr::select(Site, hb_sensor, treatment, block, min_10, min_20, min_30, min_40, min_50, min_60) # data from the initial hour of O2 DECLINE to 2.0 mg L-1 (every 10 minutes) 
+HB.hr.O2.decline <- HB.first.TWOhours %>%  dplyr::select(Site, hb_sensor, treatment, block, min_10, min_20, min_30, min_40, min_50, min_60) # data from the initial hour of O2 DECLINE to 2.0 mg L-1 (every 10 minutes) 
 HB.hr.O2.decline.RMANOVA.OM <-  na.omit(HB.hr.O2.decline)
 HB.hr.O2.decline.RMANOVA.OM <-  melt(HB.hr.O2.decline.RMANOVA.OM, id.vars=c("Site", "hb_sensor", "treatment", "block"))
 HB.hr.O2.decline.RMANOVA.OM  <- HB.hr.O2.decline.RMANOVA.OM  %>% dplyr::select(-block) # ommit sensor and block
@@ -86,35 +86,22 @@ HB.hr.recovery.hypoxia.OM  <- HB.hr.recovery.hypoxia.OM  %>% dplyr::select(-bloc
 HB.hr.recovery.hypoxia <- melt(HB.hr.recovery.hypoxia, id.vars=c("Site", "hb_sensor", "treatment", "block")) # melt into a vertical dataset 'variable' = time; 'value' = heartbeat rate
 HB.hr.recovery.hypoxia.2 <- HB.hr.recovery.hypoxia%>% dplyr::select(-hb_sensor, -block) # ommit sensor and block
 
-################################################################################## #
-################################################################################## #
-# RM ANOVA tests ----------------------------------------------------------- #
-################################################################################## 
-################################################################################## #
 
-# ....response of heartbeat rate with
-# one WIHTIN = time (as 'variable' in melted tables)
-# two BETWEEN = Site and Treatment
-# subject variable  = unique ID as Site_hbsensor
+
+############# #
+# PREP DATASETS FOR MODELS ####
+############# #
 
 # # INITIAL RESPONSE TO HYPOXIA - 6 YIMES EVERY 10 MINUTES OVER 1 HOUR
-# HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID <- paste(HB.hr.initial.hypoxia.RMANOVA.OM$Site, 
-#                                                      HB.hr.initial.hypoxia.RMANOVA.OM$hb_sensor, sep ="_")
-# HB.hr.initial.hypoxia.RMANOVA.OM$treatment <- factor(HB.hr.initial.hypoxia.RMANOVA.OM$treatment)
-# HB.hr.initial.hypoxia.RMANOVA.OM$Site <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$Site)
-# HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID)
-# HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID <- as.numeric(HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID)
-# HB.hr.initial.hypoxia.RMANOVA.OM$variable <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$variable)
-# HB.hr.initial.hypoxia.RMANOVA.OM$value <- as.numeric(HB.hr.initial.hypoxia.RMANOVA.OM$value)
-# HB.hr.initial.hypoxia.RMANOVA.OM$treatment <- as.numeric(HB.hr.initial.hypoxia.RMANOVA.OM$treatment)
-# 
-# mod.INITIAL.RMANOVA <- ezANOVA(data=HB.hr.initial.hypoxia.RMANOVA.OM, 
-#     dv=value, 
-#       wid=.(Subject_ID), 
-#         within=.(variable), 
-#          between=.(treatment,Site)) 
-# 
-# print(mod.INITIAL.RMANOVA)
+HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID <- paste(HB.hr.initial.hypoxia.RMANOVA.OM$Site, 
+                                                      HB.hr.initial.hypoxia.RMANOVA.OM$hb_sensor, sep ="_")
+HB.hr.initial.hypoxia.RMANOVA.OM$treatment <- factor(HB.hr.initial.hypoxia.RMANOVA.OM$treatment)
+HB.hr.initial.hypoxia.RMANOVA.OM$Site <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$Site)
+HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$Subject_ID)
+HB.hr.initial.hypoxia.RMANOVA.OM$variable <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$variable)
+HB.hr.initial.hypoxia.RMANOVA.OM$value <- as.numeric(HB.hr.initial.hypoxia.RMANOVA.OM$value)
+HB.hr.initial.hypoxia.RMANOVA.OM$treatment <- as.factor(HB.hr.initial.hypoxia.RMANOVA.OM$treatment)
+sapply(HB.hr.initial.hypoxia.RMANOVA.OM, class)
 
 # 24 HOURS OF HYPOXIA - 24 TIMES HOURLY MEANS OVER ONE DAY - Prepare variables
 HB.24hr.hypoxia.OM$Subject_ID <- paste(HB.24hr.hypoxia.OM$Site, 
@@ -124,9 +111,34 @@ HB.24hr.hypoxia.OM$Subject_ID <- as.factor(HB.24hr.hypoxia.OM$Subject_ID)
 HB.24hr.hypoxia.OM$Subject_ID <- abs(HB.24hr.hypoxia.OM$Subject_ID)
 HB.24hr.hypoxia.OM$variable <- as.factor(HB.24hr.hypoxia.OM$variable)
 HB.24hr.hypoxia.OM$treatment <- as.factor(HB.24hr.hypoxia.OM$treatment)
-#HB.24hr.hypoxia.OM$value <- as.factor(HB.24hr.hypoxia.OM$value)
 HB.24hr.hypoxia.OM$value <- as.numeric(HB.24hr.hypoxia.OM$value)
 sapply(HB.24hr.hypoxia.OM, class)
+
+# ONE HOUR OF RECPOVERY FROM HYPOXIA - 6 YIMES EVERY 10 MINUTES OVER 1 HOUR
+HB.hr.recovery.hypoxia.OM$Subject_ID <- paste(HB.hr.recovery.hypoxia.OM$Site, 
+                                              HB.hr.recovery.hypoxia.OM$hb_sensor, sep ="_")
+HB.hr.recovery.hypoxia.OM$Site <- as.factor(HB.hr.recovery.hypoxia.OM$Site)
+HB.hr.recovery.hypoxia.OM$Subject_ID <- as.factor(HB.hr.recovery.hypoxia.OM$Subject_ID)
+HB.hr.recovery.hypoxia.OM$variable <- as.factor(HB.hr.recovery.hypoxia.OM$variable)
+HB.hr.recovery.hypoxia.OM$value <- as.numeric(HB.hr.recovery.hypoxia.OM$value)
+HB.hr.recovery.hypoxia.OM$treatment <- factor(HB.hr.recovery.hypoxia.OM$treatment)
+sapply(HB.hr.recovery.hypoxia.OM, class)
+
+
+################################################################################## #
+################################################################################## #
+# RM ANOVA tests ----------------------------------------------------------- #
+################################################################################## 
+################################################################################## #
+
+mod.INITIAL.RMANOVA <- ezANOVA(data=HB.hr.initial.hypoxia.RMANOVA.OM, 
+     dv=value, 
+       wid=.(Subject_ID), 
+         within=.(variable), 
+          between=.(treatment,Site)) 
+ 
+print(mod.INITIAL.RMANOVA)
+
 # RUN ON ALL DATA
 mod.24HOUR.RMANOVA <- ezANOVA(data=HB.24hr.hypoxia.OM, 
                               dv=value, 
@@ -242,15 +254,6 @@ MB_24hr.aov
 
 
 # ONE HOUR OF RECPOVERY FROM HYPOXIA - 6 YIMES EVERY 10 MINUTES OVER 1 HOUR
-HB.hr.recovery.hypoxia.OM$Subject_ID <- paste(HB.hr.recovery.hypoxia.OM$Site, 
-                                              HB.hr.recovery.hypoxia.OM$hb_sensor, sep ="_")
-HB.hr.recovery.hypoxia.OM$Site <- as.factor(HB.hr.recovery.hypoxia.OM$Site)
-HB.hr.recovery.hypoxia.OM$Subject_ID <- as.factor(HB.hr.recovery.hypoxia.OM$Subject_ID)
-HB.hr.recovery.hypoxia.OM$Subject_ID <- as.numeric(HB.hr.recovery.hypoxia.OM$Subject_ID)
-HB.hr.recovery.hypoxia.OM$variable <- as.factor(HB.hr.recovery.hypoxia.OM$variable)
-HB.hr.recovery.hypoxia.OM$value <- as.numeric(HB.hr.recovery.hypoxia.OM$value)
-HB.hr.recovery.hypoxia.OM$treatment <- factor(HB.hr.recovery.hypoxia.OM$treatment)
-HB.hr.recovery.hypoxia.OM$treatment <- as.numeric(HB.hr.recovery.hypoxia.OM$treatment)
 
 mod.RECOVERY.RMANOVA <- ezANOVA(data=HB.hr.recovery.hypoxia.OM, 
                               dv=value, 

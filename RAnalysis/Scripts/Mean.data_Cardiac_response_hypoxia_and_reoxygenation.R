@@ -16,8 +16,10 @@ setwd("C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_
 
 # load table
 heart <- read.csv(file="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/Heartbeat_rate_intial_exposure_recovery_MEAN.csv", header=T) #read Size.info data
+heart_all_points <- read.csv(file ="Data/Post_insitu_experiment/Heartbeat_data/SUMMARY/Heartbeat_rate_intial_exposure_recovery_ALL_DATA.csv", header=T)
 
 
+# data prep - means
 DF_means <- heart %>% dplyr::select(-c(1:2, 11:16)) # select the subtracted (corrected) hreat rate values and the insitu mean characteristics by site
 heart.rates <- DF_means %>% dplyr::select(c(1:8)) # exposure hrs 1,2,3,8,9,15,16; recovery hr 1
 vars <- DF_means %>% dplyr::select(c(9:37)) # 30 total variables (5 DO thresholds * 6 characteristics; mag, freq, % time, count, EQ)
@@ -28,6 +30,9 @@ for(i in 1:ncol(heart.rates)){
     # loop linear regressions for rquared and p values
     rsq <- summary(lm(heart.rates[,i] ~ vars[,m]))$r.squared
     pval <- summary(lm(heart.rates[,i] ~ vars[,m]))$coef[2,"Pr(>|t|)"]
+    mod <- lm(heart.rates[,i] ~ vars[,m])
+    norm_assum <- shapiro.test(resid(mod))
+    shapiro_pval <- norm_assum$p.value
     # assign the data table 
     RSQ.loop <- data.frame(matrix(nrow = 1, ncol = 4)) # create a new data table
     colnames(RSQ.loop) <- c('heart.meas', 'hypoxia.characteristic', 'rsq', 'pval') # assign headers
@@ -35,6 +40,7 @@ for(i in 1:ncol(heart.rates)){
     RSQ.loop$hypoxia.characteristic <- colnames(vars[m])
     RSQ.loop$rsq <- rsq
     RSQ.loop$pval <- pval
+    RSQ.loop$shapiro_pval <- shapiro_pval
     # loop additions 
     df <- data.frame(RSQ.loop) # name dataframe for this single row
     Summary_TABLE <- rbind(Summary_TABLE,df) # bind to a cumulative list dataframe
@@ -42,6 +48,27 @@ for(i in 1:ncol(heart.rates)){
 print(Summary_TABLE) # show loop progress in the console
 }# outside loo
 Summary_TABLE # loop product 
+
+
+# Linear Regression assumptions loop - saved to cumulative folder
+library(broom)
+for(i in 1:ncol(heart.rates)){
+  for(m in 1:ncol(vars)) {
+    # loop linear regressions and call the model
+    
+    model <- lm(heart.rates[,i] ~ vars[,m])
+    pval <- summary(lm(heart.rates[,i] ~ vars[,m]))$coef[2,"Pr(>|t|)"]
+    # assign the data table 
+    model.diag.metrics <- augment(model)
+    # save plots every inside loop and name by x and y variables
+    pdf(paste0("C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_heartbeat_rate/RAnalysis/Output/Regression_Assumptions_Plots/",colnames(heart.rates[i]),"_",colnames(vars[m]),"_regression.pdf"))
+    
+    par(mfrow = c(2, 2))
+    plot(model)
+    dev.off()
+  }
+}
+
 
 ### - create new summary table to filter out unwanted data (salininty, secchi depth, chl a, site depth)
 #### Why? This data was not measured continuously during field acclimation and is not related to the 5 hypoxia thresholds for the heatmap
@@ -51,7 +78,7 @@ Summary_TABLE2 <- Summary_TABLE %>%
   separate(hypoxia.characteristic, c("Descriptor", "DO_threshold"), "_")
 
 
-# Create Heatmap
+# Create Heatmap (rsq)
 Summary_TABLE3 <- Summary_TABLE2 %>%  dplyr::filter(!Descriptor  %in% c("MeanConcentration", "EQ"))
 Summary_TABLE3$rsq <- format(round(Summary_TABLE3$rsq, 3)) # sig figs for heat map
 Summary_TABLE3$rsq <-as.numeric(Summary_TABLE3$rsq) # convert rsq to numeric
@@ -77,6 +104,23 @@ RSQ_Heatmap_Plots <- Summary_TABLE3 %>% # run heat map
 RSQ_Heatmap_Plots # view plots
 # save the heat map to the output folder
 ggsave(RSQ_Heatmap_Plots, file="C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_heartbeat_rate/RAnalysis/Output/Supplementary_heatmap.pdf",
+       width=35, height=20, units = "cm", dpi=500)
+
+# Create Heatmap (pval)
+Summary_TABLE3$pval <- format(round(Summary_TABLE3$pval, 3)) # sig figs for heat map
+Summary_TABLE3$pval <-as.numeric(Summary_TABLE3$pval) # convert rsq to numeric
+
+PVAL_Heatmap_Plots <- Summary_TABLE3 %>% # run heat map
+  ggplot(aes(DCDO_descriptor,DO_threshold, fill = pval)) + # the descritor and DO threhsolds and fill by the rsq values
+  geom_tile() + # tile command calls the data as a heat map
+  #labs(title=expression("Cardiac response patterns"~Delta*"HBRs")) +
+  scale_fill_gradient(low = "white", high = "grey50") + # heatmap as white to grey
+  facet_grid(. ~ heart.meas, scales = "free") + # heat map spectrum is determined by the data
+  geom_text(size=3, aes(label = pval)) + # add rsq text to each heatmap segment
+  theme(axis.text.x = element_text(angle = 90)) # rotate x axis labels
+PVAL_Heatmap_Plots # view plots
+# save the heat map to the output folder
+ggsave(PVAL_Heatmap_Plots, file="C:/Users/samjg/Documents/My_Projects/Argopecten_hearbeat_rate/Argopecten_heartbeat_rate/RAnalysis/Output/Supplementary_heatmap_PVAL.pdf",
        width=35, height=20, units = "cm", dpi=500)
 
 ################################################################# #
